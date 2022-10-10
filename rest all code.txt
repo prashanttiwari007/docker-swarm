@@ -1,0 +1,165 @@
+Mvn package 
+Create a Spring Maven Docker Image command :-
+And add a Dockerfile code :-
+
+sudo docker build -t product-backend-app . -f Dockerfile			//ubuntu command
+docker build -t product-backend-app . -f Dockerfile
+
+
+
+Angular Code :-	{Frontend]
+ng create a
+app.component.html	:-
+<app-product></app-product>
+
+product.component.ts 	:-
+import { Component, OnInit } from '@angular/core';
+import { Product } from '../product';
+import { ProductService } from '../product.service';
+
+@Component({
+  selector: 'app-product',
+  templateUrl: './product.component.html',
+  styleUrls: ['./product.component.css']
+})
+export class ProductComponent implements OnInit {
+
+  products:Array<Product>=[];
+
+  constructor(public ps:ProductService) { }
+
+  ngOnInit(): void {
+    this.loadAllProduct();
+  }
+
+  loadAllProduct(){
+    this.ps.loadAllProduct().subscribe({
+      next:(result:any)=>this.products = result,
+      error:(error:any)=>console.log(error),
+      complete:()=>console.log("completed"),
+    })
+  }
+
+
+
+}
+product.component.html 	:-
+import { Component, OnInit } from '@angular/core';
+import { Product } from '../product';
+import { ProductService } from '../product.service';
+
+@Component({
+  selector: 'app-product',
+  templateUrl: './product.component.html',
+  styleUrls: ['./product.component.css']
+})
+export class ProductComponent implements OnInit {
+
+  products:Array<Product>=[];
+
+  constructor(public ps:ProductService) { }
+
+  ngOnInit(): void {
+    this.loadAllProduct();
+  }
+
+  loadAllProduct(){
+    this.ps.loadAllProduct().subscribe({
+      next:(result:any)=>this.products = result,
+      error:(error:any)=>console.log(error),
+      complete:()=>console.log("completed"),
+    })
+  }
+
+Product.ts 	:-
+export class Product {
+    constructor(public pid:number,
+        public pname:string,
+        public price:number,
+        public url:string
+        ){}
+}
+
+
+Product.service.ts	:-
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { Product } from './product';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ProductService {
+
+  constructor(public http:HttpClient) { }
+
+  loadAllProduct():Observable<Product[]>{
+    return this.http.get<Product[]>("http://localhost:9090/product/allProduct");
+  }
+
+}
+
+
+App.module.ts 	:-
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { ProductComponent } from './product/product.component';
+import { HttpClientModule } from '@angular/common/http'
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    ProductComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,HttpClientModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+
+
+
+
+
+}
+ng build
+
+Command to create a image :-
+Dockerfile code :-
+FROM nginx
+COPY dist/product-frontend/ /usr/share/nginx/html
+
+docker build -t product-frontend-app . -f Dockerfile
+
+Create a Docker compose to create a Docker Swarm ,and docker interconnected 	:-
+docker-compose.yml Code :-
+version: "3"
+services:
+  product-backend:
+    image: product-backend-app
+    ports:
+      - "9191:9191"
+    networks:
+      - product-management-system
+  product-frontend:
+    image: product-frontend-app
+    ports:
+      - "80:80"
+    depends_on:
+      - product-backend
+    networks:
+      - product-management-system
+networks:
+  product-management-system
+
+Start Docker -compose :-
+docker-compose up
+
